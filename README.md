@@ -6,20 +6,25 @@
      \__,_|\___|_|\__\___/|___(_)_/ |_|_| |_| |_|
                                                  
 
-This is a vim plugin for use with deltos; it's got syntax highlighting and some
-keybindings for (at least):
+This is a vim plugin for use with [deltos](http://github.com/polm/deltos). It
+comes with syntax highlighting and keybindings. For full enjoyment be sure to
+install [Unite](http://github.com/Shougo/Unite.vim).
 
-- creating a new note `<leader>nd` (new deltos)
-- yanking the current ID `<leader>id`
-- viewing open notes by title `<leader>a`
-- searching notes by tag `<leader>st` (search tag)
-- following a link with `Enter` (links look like: `.(Title//<note id>)`)
+Local keybindings when in `$DELTOS_HOME/by-id`: 
 
-Note that the overview screens use Unite.vim, so you should install that first.
+| key | action |
+| <leader>nd | new note (**N**ew **D**eltos) |
+| <leader>id | yank the current note's ID |
+| <leader>nl | make word under cursor link to a new note |
+| Enter | follow link `.(link here//<id>)` |
+
+Global keybindings:
+
+| key | action |
+| <leader>da | Open all deltos notes in Unite |
+| <leader>do | Show all open deltos notes in Unite |
+
 NeoBundle or similar is strongly recommended.
-
-I've never written a plugin before so I'm not entirely sure this works. Please
-tell me if it doesn't. 
 
 WTFPL / Kopyleft All Rites Reversed / do as you please.
 

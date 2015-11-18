@@ -6,22 +6,27 @@ function! FollowDeltosLink()
     call setreg('x', oldx)
     let uuid = split(link, '//')[-1]
     let fname = $DELTOS_HOME . '/by-id/' . uuid
-    execute ':e' fnameescape(fname)
+    " Don't create new files
+    " If the uuid isn't a filename it's probably empty or a url etc.
+    if filereadable(fname) 
+        execute ':e' fnameescape(fname)
+    endif
 endfunction
 
-" Make new note
+" Make new note and edit it
 let g:deltos_command = 'deltos'
-function! DeltosNewNote()
+function! DeltosOpenNewNote()
     let fname = system(g:deltos_command . ' new')[:-2]
     execute ':e' fnameescape(fname)
 endfunction
 
-" This changes the buffer name so that if the symlink goes away you can still
-" reload the file. 
-function! DeltosLoad()
-    let fname = resolve(expand('%'))
-    silent execute ':f ' . fnameescape(fname)
-    execute ':w!'
+" Make current line into a link to a new note
+function! DeltosNewLinkFromCurrentLine()
+    let line = getline('.')
+    " note we can just pass the title to deltos new
+    let fname = system(g:deltos_command . ' new ' . line)[:-2]
+    let link = '.(' . line . '//' . fname . ')'
+    call setline('.', link)
 endfunction
 
 " Put the current file ID in the paste buffer, good for making links
@@ -54,13 +59,11 @@ endfunction
 call unite#define_source(s:unite_source)
 unlet s:unite_source " we no longer need the function
 
-au BufReadPost $DELTOS_HOME/* execute ':call DeltosLoad()'
 au BufRead,BufNewFile $DELTOS_HOME/* set filetype=deltos
 au BufRead,BufNewFile $DELTOS_HOME/* nmap <silent><buffer> <CR> :call FollowDeltosLink()<CR>
-au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <leader>nd :call DeltosNewNote()<CR>
+au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <leader>nd :call DeltosOpenNewNote()<CR>
 au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <leader>id :call DeltosYankId()<CR>
-au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <leader>st :edit $DELTOS_HOME/by-tag/<CR>
-au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <leader>sn :edit $DELTOS_HOME/by-title/<CR>
+au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <leader>nl :call DeltosNewLinkFromCurrentLine()<CR>
 au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <leader>a :<C-u>Unite -buffer-name=deltos deltos<cr>
 au BufWritePost $DELTOS_HOME/* silent !deltos update
 

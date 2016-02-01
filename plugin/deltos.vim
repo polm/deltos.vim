@@ -81,10 +81,10 @@ function! s:unite_source_deltos_all.gather_candidates(args, context)
     " fields are id, title, tags
     let alltsv = split(system(g:deltos_command . ' tsv'), "\n")
     return map(alltsv, '{
-                \ "word": join(split(v:val,"\t")[1:2], " :: "),
+                \ "word": join(split(v:val,"\t")[0:1], " :: "),
                 \ "source": "deltos_all",
                 \ "kind": "file",
-                \ "action__path": ($DELTOS_HOME . "/by-id/" . split(v:val,"\t")[0]),
+                \ "action__path": ($DELTOS_HOME . "/by-id/" . split(v:val,"\t")[2]),
                 \ }')
 endfunction
 call unite#define_source(s:unite_source_deltos_all)
@@ -94,10 +94,10 @@ let s:unite_source_deltos_link = { 'name': 'deltos_link' }
 function! s:unite_source_deltos_link.gather_candidates(args, context)
     let alltsv = split(system(g:deltos_command . ' tsv'), "\n")
     return map(alltsv, '{
-                \ "word": join(split(v:val,"\t")[1:2], " :: "),
+                \ "word": join(split(v:val,"\t")[0:1], " :: "),
                 \ "source": "deltos_link",
                 \ "kind": "word",
-                \ "action__text": ".(" . split(v:val,"\t")[1] . "//" . split(v:val,"\t")[0] . ")",
+                \ "action__text": ".(" . split(v:val,"\t")[0] . "//" . split(v:val,"\t")[2] . ")",
                 \ }')
 endfunction
 call unite#define_source(s:unite_source_deltos_link)

@@ -33,16 +33,27 @@ function! DeltosNewLink()
     execute "normal! ciw.(NewTitleHere//" . uuid . ")" 
 endfunction
 
-" Make word under cursor into a link to a new note
-" current line is not usually what we want, and visual selection is too finicky
-function! DeltosNewLinkFromCurrentWord()
-    let title = expand("<cword>")
-    " assumes text is on just one line
-   " let title = getline("'<")[getpos("'<")[2]-1:getpos("'>")[2]]
-    " note we can just pass the title to deltos new
+" Make visual selection into a link to a new note
+" This expands the visual selection to completely include any touched words
+" XXX currently if you highlight the last letter of a multi-letter word at the
+" start of the visual selection it is *not* included; fixing this probably
+" requires checking the length of the word there (using setpos and cword is
+" one way)
+function! DeltosNewLinkFromVisualSelection()
+    normal `<eb
+    let start = getpos('.')[2] - 1
+    normal `>beh
+    let finish = getpos('.')[2]
+    let title = getline('.')[start : finish]
     let fname = system(g:deltos_command . ' new ' . title)[:-2]
     let uuid = split(fname, '/')[-1]
-    execute "normal! ciw.(" . title . '//' . uuid . ")" 
+    let link = ".(" . title . '//' . uuid . ")"
+
+    let prefix = ''
+    if start > 0
+      let prefix = getline('.')[: start - 1]
+    endif
+    call setline('.', prefix . link . getline('.')[finish+1 : ])
 endfunction
 
 " Put the current file ID in the paste buffer, good for making links
@@ -109,6 +120,7 @@ augroup deltos
     au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <leader>nd :call DeltosOpenNewNote()<CR>
     au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <leader>id :call DeltosYankId()<CR>
     au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <leader>nl :call DeltosNewLink()<CR>
+    au BufRead,BufNewFile $DELTOS_HOME/* vnoremap <leader>nl :call DeltosNewLinkFromVisualSelection()<CR>
     au BufRead,BufNewFile $DELTOS_HOME/* set conceallevel=2 concealcursor=i " Uses conceal settings
 augroup END
 

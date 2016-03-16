@@ -10,7 +10,8 @@ Local keybindings when in `$DELTOS_HOME/by-id`:
 | --- | --- |
 | <leader>nd | new note (**N**ew **D**eltos) |
 | <leader>id | yank the current note's ID |
-| <leader>nl | make word under cursor link to a new note |
+| <leader>nl | make a link to a new note (wiki style) |
+| (visual) <leader>nl | make the words in the visual selection into a link |
 | Enter | follow link `.(link here//<id>)` |
 
 Global keybindings:

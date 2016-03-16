@@ -103,7 +103,6 @@ endfunction
 call unite#define_source(s:unite_source_deltos_link)
 unlet s:unite_source_deltos_link " we no longer need the function
 
-
 augroup deltos
     autocmd!
     au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <silent><buffer> <CR> :call FollowDeltosLink()<CR>
@@ -113,6 +112,6 @@ augroup deltos
     au BufRead,BufNewFile $DELTOS_HOME/* set conceallevel=2 concealcursor=i " Uses conceal settings
 augroup END
 
-nnoremap <leader>do :<C-u>Unite -buffer-name=deltos_open deltos_open<cr>
-nnoremap <leader>da :<C-u>Unite -buffer-name=deltos_all deltos_all<cr>
-nnoremap <leader>li :<C-u>Unite -buffer-name=deltos_link deltos_link<cr>
+nnoremap <leader>do :<C-u>Unite -buffer-name=deltos_open -start-insert deltos_open<cr>
+nnoremap <leader>da :<C-u>Unite -buffer-name=deltos_all -start-insert deltos_all<cr>
+nnoremap <leader>li :<C-u>Unite -buffer-name=deltos_link -start-insert deltos_link<cr>

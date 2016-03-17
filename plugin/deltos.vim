@@ -114,13 +114,25 @@ endfunction
 call unite#define_source(s:unite_source_deltos_link)
 unlet s:unite_source_deltos_link " we no longer need the function
 
+function! DeltosDaily()
+  " Setting the editor to echo means we just get the filename
+  let fname = system("EDITOR=echo " . g:deltos_command . " daily")[:-2]
+  if filereadable(fnameescape(fname))
+    execute ':e' fnameescape(fname)
+  end
+endfunction
+
 augroup deltos
     autocmd!
+    " normal
     au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <silent><buffer> <CR> :call FollowDeltosLink()<CR>
     au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <leader>nd :call DeltosOpenNewNote()<CR>
     au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <leader>id :call DeltosYankId()<CR>
     au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <leader>nl :call DeltosNewLink()<CR>
+    au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <leader>da :call DeltosDaily()<CR>
+    " visual
     au BufRead,BufNewFile $DELTOS_HOME/* vnoremap <leader>nl :call DeltosNewLinkFromVisualSelection()<CR>
+    " not interactive
     au BufRead,BufNewFile $DELTOS_HOME/* set conceallevel=2 concealcursor=i " Uses conceal settings
 augroup END
 

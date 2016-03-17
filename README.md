@@ -11,6 +11,7 @@ Local keybindings when in `$DELTOS_HOME/by-id`:
 | &lt;leader&gt;nd | new note (**N**ew **D**eltos) |
 | &lt;leader&gt;id | yank the current note's ID |
 | &lt;leader&gt;nl | make a link to a new note (wiki style) |
+| &lt;leader&gt;da | open **da**ily note |
 | (visual) &lt;leader&gt;nl | make the words in the visual selection into a link |
 | Enter | follow link `.(link here//<id>)` |
 

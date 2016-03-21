@@ -137,5 +137,5 @@ augroup deltos
 augroup END
 
 nnoremap <leader>do :<C-u>Unite -buffer-name=deltos_open -start-insert deltos_open<cr>
-nnoremap <leader>da :<C-u>Unite -buffer-name=deltos_all -start-insert deltos_all<cr>
+nnoremap <leader>ds :<C-u>Unite -buffer-name=deltos_all -start-insert deltos_all<cr>
 nnoremap <leader>li :<C-u>Unite -buffer-name=deltos_link -start-insert deltos_link<cr>

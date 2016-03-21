@@ -19,7 +19,7 @@ Global keybindings:
 
 | key | action |
 | --- | --- |
-| &lt;leader&gt;da | Open all deltos notes in Unite |
+| &lt;leader&gt;ds | Open all deltos notes in Unite (*d*eltos *s*earch) |
 | &lt;leader&gt;do | Show all open deltos notes in Unite |
 
 NeoBundle or similar is strongly recommended.

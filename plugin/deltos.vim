@@ -6,15 +6,16 @@ function! FollowDeltosLink()
     call setreg('x', oldx)
     if !empty(link) && link =~ '//'
         let uuid = split(link, '//')[-1]
-        let fname = $DELTOS_HOME . '/by-id/' . uuid
+        let fname = $DELTOS_HOME . '/by-id/' . uuid . '/deltos'
     else
         " try just using the word under the cursor - good for parents etc.
         " save and restore iskeyword since we need dashes here
         let oldisk = &iskeyword
         setlocal iskeyword+=-
-        let fname = $DELTOS_HOME . '/by-id/' . expand("<cword>")
+        let fname = $DELTOS_HOME . '/by-id/' . expand("<cword>") . '/deltos'
         let &iskeyword = oldisk
     endif
+    echom 'fname: ' . fname
     if filereadable(fname)
         execute ':e' fnameescape(fname)
     end
@@ -63,7 +64,8 @@ function! DeltosYankId()
 endfunction
 
 function! DeltosGetTitle(fname)
-    let titleline = system("grep -m1 '^title' " . fnameescape(expand(a:fname)))
+    let ff  = fnameescape(expand(a:fname))
+    let titleline = system("grep -m1 '^title' " . ff)
     return join(split(titleline, ' ')[1:-1], ' ')[0:-2] " -2 chomps the newline
 endfunction
 
@@ -95,7 +97,7 @@ function! s:unite_source_deltos_all.gather_candidates(args, context)
                 \ "word": join(split(v:val,"\t")[0:1], " :: "),
                 \ "source": "deltos_all",
                 \ "kind": "file",
-                \ "action__path": ($DELTOS_HOME . "/by-id/" . split(v:val,"\t")[2]),
+                \ "action__path": ($DELTOS_HOME . "/by-id/" . split(v:val,"\t")[2] . "/deltos"),
                 \ }')
 endfunction
 call unite#define_source(s:unite_source_deltos_all)
@@ -122,18 +124,31 @@ function! DeltosDaily()
   end
 endfunction
 
+function! DeltosOpen()
+  if isdirectory(expand('%'))
+    let base = expand('%')
+    execute ':e ' (base . '/deltos')
+    set statusline=%{DeltosGetTitle('%')}
+    set filetype=deltos
+  end
+endfunction
+
 augroup deltos
     autocmd!
-    " normal
-    au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <silent><buffer> <CR> :call FollowDeltosLink()<CR>
-    au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <leader>nd :call DeltosOpenNewNote()<CR>
-    au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <leader>id :call DeltosYankId()<CR>
-    au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <leader>nl :call DeltosNewLink()<CR>
-    au BufRead,BufNewFile $DELTOS_HOME/* nnoremap <leader>da :call DeltosDaily()<CR>
+    " Handle dir
+    au VimEnter $DELTOS_HOME/* sil! au! FileExplorer *
+    au BufEnter,BufRead $DELTOS_HOME/by-id/* :call DeltosOpen()
+    au BufEnter,BufRead $DELTOS_HOME/by-id/* cd %:p:h
+    " normal mode
+    au FileType deltos nnoremap <buffer> <CR> :call FollowDeltosLink()<CR>
+    au FileType deltos nnoremap <leader>nd :call DeltosOpenNewNote()<CR>
+    au FileType deltos nnoremap <leader>id :call DeltosYankId()<CR>
+    au FileType deltos nnoremap <leader>nl :call DeltosNewLink()<CR>
+    au FileType deltos nnoremap <leader>da :call DeltosDaily()<CR>
     " visual
-    au BufRead,BufNewFile $DELTOS_HOME/* vnoremap <leader>nl :call DeltosNewLinkFromVisualSelection()<CR>
+    au FileType deltos vnoremap <leader>nl :call DeltosNewLinkFromVisualSelection()<CR>
     " not interactive
-    au BufRead,BufNewFile $DELTOS_HOME/* set conceallevel=2 concealcursor=i " Uses conceal settings
+    au FileType deltos set conceallevel=2 concealcursor=i " Uses conceal settings
 augroup END
 
 nnoremap <leader>do :<C-u>Unite -buffer-name=deltos_open -start-insert deltos_open<cr>

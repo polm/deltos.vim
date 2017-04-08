@@ -10,7 +10,7 @@ syn match deltosLinkOpener "\.(" contained conceal cchar=°
 syn match deltosLinkCloser "//[^)]*)" contained conceal
 
 syn match deltosCommand "^!.*$" contains=deltosCommandKeyword,deltosCommandArgs
-syn match deltosCommandKeyword "^![A-z][A-z]*" contained
+syn match deltosCommandKeyword "^![A-z][A-z-]*" contained
 syn match deltosCommandArgs " .*$"  contained
 
 syn match deltosCodeOutput "^無無無無.*$" contains=deltosOutputStart,deltosLink

@@ -136,7 +136,7 @@ endfunction
 augroup deltos
     autocmd!
     " Handle dir
-    au VimEnter $DELTOS_HOME/* sil! au! FileExplorer *
+    au VimEnter $DELTOS_HOME/by-id/*/deltos sil! au! FileExplorer *
     au BufEnter,BufRead $DELTOS_HOME/by-id/* :call DeltosOpen()
     au BufEnter,BufRead $DELTOS_HOME/by-id/* cd %:p:h
     " normal mode

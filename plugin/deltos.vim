@@ -28,6 +28,41 @@ function! DeltosOpenNewNote()
     execute ':e' fnameescape(fname)
 endfunction
 
+function! DeltosOpenReply()
+    " get the id of the current note
+    let idline = system("grep -m1 '^id:' " . expand('%'))
+    let id = split(idline, ' ')[-1]
+    " create the reply
+    let fname = system(g:deltos_command . ' reply ' . id)[:-2]
+    if v:shell_error
+      echo "Failed with error: " . fname
+    else
+      execute ':e' fnameescape(fname)
+    endif
+endfunction
+
+function! DeltosOpenThreadNext()
+    let idline = system("grep -m1 '^id:' " . expand('%'))
+    let id = split(idline, ' ')[-1]
+    let nid = system(g:deltos_command . ' get-thread-next ' . id)[:-2]
+    if v:shell_error
+      echo "Failed with error: " . nid
+    else
+      execute ':e' fnameescape($DELTOS_HOME . '/by-id/' . nid)
+    endif
+endfunction
+
+function! DeltosOpenThreadPrev()
+    let idline = system("grep -m1 '^id:' " . expand('%'))
+    let id = split(idline, ' ')[-1]
+    let pid = system(g:deltos_command . ' get-thread-prev ' . id)[:-2]
+    if v:shell_error
+      echo "Failed with error: " . pid
+    else
+      execute ':e' fnameescape($DELTOS_HOME . '/by-id/' . pid)
+    endif
+endfunction
+
 function! DeltosNewLink()
     let fname = system(g:deltos_command . ' new')[:-2]
     let uuid = split(fname, '/')[-1]
@@ -57,16 +92,48 @@ function! DeltosNewLinkFromVisualSelection()
     call setline('.', prefix . link . getline('.')[finish+1 : ])
 endfunction
 
-" Put the current file ID in the paste buffer, good for making links
-function! DeltosYankId()
-    let idline = system("grep -m1 '^id:' " . expand('%'))
-    let @" = split(idline, ' ')[-1]
+function! DeltosLineToNewEntry()
+  let line = getline('.')
+  let prefix = ''
+  if '- ' == line[0:1]
+    let line = line[2:]
+    let prefix = '- '
+  endif
+
+  let fname = system(g:deltos_command . ' new ' . shellescape(line) )[:-2]
+  let uuid = split(fname, '/')[-1]
+  let link = ".(" . line . '//' . uuid . ")"
+  call setline('.', prefix . link)
 endfunction
 
-function! DeltosGetTitle(fname)
+" Put the current file ID in the paste buffer, good for making links
+function! DeltosYankId()
+    let @" = DeltosGetId()
+endfunction
+
+function! DeltosGetId()
+    let idline = system("grep -m1 '^id:' " . expand('%'))
+    let id = split(idline, ' ')[-1]
+    return id
+endfunction
+
+function! DeltosGetUniteLine(fname)
     let ff  = fnameescape(expand(a:fname))
-    let titleline = system("grep -m1 '^title' " . ff)
-    return join(split(titleline, ' ')[1:-1], ' ')[0:-2] " -2 chomps the newline
+    if isdirectory(ff)
+      let ff = ff . '/deltos'
+    endif
+    let date = DeltosGetField(a:fname, 'date')
+    let title = DeltosGetField(a:fname, 'title')
+    return title . ' - ' . date
+endfunction
+
+function! DeltosGetField(fname, field)
+    let ff  = fnameescape(expand(a:fname))
+    if isdirectory(ff)
+      let ff = ff . '/deltos'
+    endif
+    let line = system("grep -m1 '^" . a:field . "' " . ff)
+    return join(split(line, ' ')[1:-1], ' ')[0:-2] " -2 chomps the newline
 endfunction
 
 "Deltos unite stuff
@@ -77,7 +144,7 @@ function! s:unite_source_deltos_open.gather_candidates(args, context)
     " This just gives us numbers
     let buffers = filter(range(1, bufnr('$')), 'buflisted(v:val)')
     return map(buffers, '{
-                \ "word": DeltosGetTitle(bufname(v:val)),
+                \ "word": DeltosGetUniteLine(bufname(v:val)),
                 \ "source": "deltos_open",
                 \ "kind": "buffer",
                 \ "action__buffer_nr": v:val,
@@ -125,12 +192,20 @@ function! DeltosDaily()
 endfunction
 
 function! DeltosOpen()
-  if isdirectory(expand('%'))
-    let base = expand('%')
-    execute ':e ' (base . '/deltos')
-    set statusline=%{DeltosGetTitle('%')}
-    set filetype=deltos
+  let base = expand('%')
+  if !isdirectory(base)
+    return
   end
+
+  " get the number of the buffer with the directory
+  let cb = expand('<abuf>') 
+  " open the deltos file
+  execute ':e ' (base . '/deltos')
+  " clear the directory buffer
+  execute cb . 'bwipeout!'
+
+  set statusline=%{DeltosGetField('%','title')}
+  set filetype=deltos
 endfunction
 
 augroup deltos
@@ -142,13 +217,22 @@ augroup deltos
     " normal mode
     au FileType deltos nnoremap <buffer> <CR> :call FollowDeltosLink()<CR>
     au FileType deltos nnoremap <leader>nd :call DeltosOpenNewNote()<CR>
+    au FileType deltos nnoremap <leader>dr :call DeltosOpenReply()<CR>
     au FileType deltos nnoremap <leader>id :call DeltosYankId()<CR>
     au FileType deltos nnoremap <leader>nl :call DeltosNewLink()<CR>
+    au FileType deltos nnoremap <leader>ni :call DeltosLineToNewEntry()<CR>
     au FileType deltos nnoremap <leader>da :call DeltosDaily()<CR>
+    " thread navigation
+    au FileType deltos nnoremap <leader>L :call DeltosOpenThreadNext()<CR>
+    au FileType deltos nnoremap <leader>H :call DeltosOpenThreadPrev()<CR>
+
     " visual
     au FileType deltos vnoremap <leader>nl :call DeltosNewLinkFromVisualSelection()<CR>
     " not interactive
     au FileType deltos set conceallevel=2 concealcursor=i " Uses conceal settings
+
+    " on saving
+    au BufWritePost $DELTOS_HOME/by-id/*/deltos silent exec '!deltos update-db ' . DeltosGetId()
 augroup END
 
 nnoremap <leader>do :<C-u>Unite -buffer-name=deltos_open -start-insert deltos_open<cr>

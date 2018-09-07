@@ -232,7 +232,7 @@ augroup deltos
     au FileType deltos set conceallevel=2 concealcursor=i " Uses conceal settings
 
     " on saving
-    au BufWritePost $DELTOS_HOME/by-id/*/deltos silent exec '!deltos update-db ' . DeltosGetId()
+    au BufWritePost deltos silent exec '!deltos db-update ' . DeltosGetId()
 augroup END
 
 nnoremap <leader>do :<C-u>Unite -buffer-name=deltos_open -start-insert deltos_open<cr>

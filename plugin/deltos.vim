@@ -164,7 +164,7 @@ function! s:unite_source_deltos_all.gather_candidates(args, context)
                 \ "word": join(split(v:val,"\t")[0:1], " :: "),
                 \ "source": "deltos_all",
                 \ "kind": "file",
-                \ "action__path": ($DELTOS_HOME . "/by-id/" . split(v:val,"\t")[2] . "/deltos"),
+                \ "action__path": ($DELTOS_HOME . "/by-id/" . split(v:val,"\t")[3] . "/deltos"),
                 \ }')
 endfunction
 call unite#define_source(s:unite_source_deltos_all)
@@ -177,7 +177,7 @@ function! s:unite_source_deltos_link.gather_candidates(args, context)
                 \ "word": join(split(v:val,"\t")[0:1], " :: "),
                 \ "source": "deltos_link",
                 \ "kind": "word",
-                \ "action__text": ".(" . split(v:val,"\t")[0] . "//" . split(v:val,"\t")[2] . ")",
+                \ "action__text": ".(" . split(v:val,"\t")[0] . "//" . split(v:val,"\t")[3] . ")",
                 \ }')
 endfunction
 call unite#define_source(s:unite_source_deltos_link)

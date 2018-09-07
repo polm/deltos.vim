@@ -41,25 +41,65 @@ function! DeltosOpenReply()
     endif
 endfunction
 
+function! DeltosGetThread()
+    let oldcur = getcurpos()
+    call cursor(0, 1)
+    let tline = search('^thread:', 'c')
+    call setpos('.', oldcur)
+    if tline > 0
+      return split(getline(tline), ' ')[-1]
+    endif
+endfunction
+
+function! DeltosGetId()
+    let oldcur = getcurpos()
+    call cursor(0, 1)
+    let tline = search('^id:', 'c')
+    call setpos('.', oldcur)
+    if tline > 0
+      return split(getline(tline), ' ')[-1]
+    endif
+endfunction
+
 function! DeltosOpenThreadNext()
-    let idline = system("grep -m1 '^id:' " . expand('%'))
-    let id = split(idline, ' ')[-1]
-    let nid = system(g:deltos_command . ' get-thread-next ' . id)[:-2]
+    let thread = DeltosGetThread()
+    if empty(thread)
+      echo "No thread!"
+      return
+    endif
+
+    let posts = split(system(g:deltos_command . ' get-thread ' . thread), '\n')
     if v:shell_error
-      echo "Failed with error: " . nid
+      echo "Failed with error!"
     else
-      execute ':e' fnameescape($DELTOS_HOME . '/by-id/' . nid)
+      let id = DeltosGetId()
+      let nidx = index(posts, id) - 1
+      if nidx < 0
+        echo "Already at newest post"
+      else 
+        execute ':e' fnameescape($DELTOS_HOME . '/by-id/' . posts[nidx])
+      endif
     endif
 endfunction
 
 function! DeltosOpenThreadPrev()
-    let idline = system("grep -m1 '^id:' " . expand('%'))
-    let id = split(idline, ' ')[-1]
-    let pid = system(g:deltos_command . ' get-thread-prev ' . id)[:-2]
+    let thread = DeltosGetThread()
+    if empty(thread)
+      echo "No thread!"
+      return
+    endif
+
+    let posts = split(system(g:deltos_command . ' get-thread ' . thread), '\n')
     if v:shell_error
-      echo "Failed with error: " . pid
+      echo "Failed with error!"
     else
-      execute ':e' fnameescape($DELTOS_HOME . '/by-id/' . pid)
+      let id = DeltosGetId()
+      let nidx = index(posts, id) + 1
+      if nidx >= len(posts) 
+        echo "Already at oldest post"
+      else 
+        execute ':e' fnameescape($DELTOS_HOME . '/by-id/' . posts[nidx])
+      endif
     endif
 endfunction
 
@@ -109,12 +149,6 @@ endfunction
 " Put the current file ID in the paste buffer, good for making links
 function! DeltosYankId()
     let @" = DeltosGetId()
-endfunction
-
-function! DeltosGetId()
-    let idline = system("grep -m1 '^id:' " . expand('%'))
-    let id = split(idline, ' ')[-1]
-    return id
 endfunction
 
 function! DeltosGetUniteLine(fname)

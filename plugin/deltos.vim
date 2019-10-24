@@ -217,14 +217,6 @@ endfunction
 call unite#define_source(s:unite_source_deltos_link)
 unlet s:unite_source_deltos_link " we no longer need the function
 
-function! DeltosDaily()
-  " Setting the editor to echo means we just get the filename
-  let fname = system("EDITOR=echo " . g:deltos_command . " daily")[:-2]
-  if filereadable(fnameescape(fname))
-    execute ':e' fnameescape(fname)
-  end
-endfunction
-
 function! DeltosOpen()
   let base = expand('%')
   if !isdirectory(base)
@@ -255,7 +247,6 @@ augroup deltos
     au FileType deltos nnoremap <leader>id :call DeltosYankId()<CR>
     au FileType deltos nnoremap <leader>nl :call DeltosNewLink()<CR>
     au FileType deltos nnoremap <leader>ni :call DeltosLineToNewEntry()<CR>
-    au FileType deltos nnoremap <leader>da :call DeltosDaily()<CR>
     " thread navigation
     au FileType deltos nnoremap <leader>L :call DeltosOpenThreadNext()<CR>
     au FileType deltos nnoremap <leader>H :call DeltosOpenThreadPrev()<CR>

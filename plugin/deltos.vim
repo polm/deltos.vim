@@ -118,6 +118,11 @@ function! DeltosOpenThreadLatest()
     endif
 endfunction
 
+function! DeltosOpenFromFzf(line)
+    let deltosid = split(a:line, '\t')[-1]
+    execute ':e' fnameescape($DELTOS_HOME . '/by-id/' . deltosid)
+endfunction
+
 function! DeltosNewLink()
     let fname = system(g:deltos_command . ' new')[:-2]
     let uuid = split(fname, '/')[-1]
@@ -166,14 +171,20 @@ function! DeltosYankId()
     let @" = DeltosGetId()
 endfunction
 
-function! DeltosGetUniteLine(fname)
-    let ff  = fnameescape(expand(a:fname))
+function! DeltosGetBuffers()
+    return map(filter(range(1, bufnr('$')), 'buflisted(v:val)'), 
+          \ 'DeltosGetBufferLine(v:val)')
+endfunction
+
+function! DeltosGetBufferLine(bufnum)
+    let ff  = fnameescape(expand('#' . a:bufnum))
     if isdirectory(ff)
       let ff = ff . '/deltos'
     endif
-    let date = DeltosGetField(a:fname, 'date')
-    let title = DeltosGetField(a:fname, 'title')
-    return title . ' - ' . date
+    let date = DeltosGetField(ff, 'date')
+    let title = DeltosGetField(ff, 'title')
+    let id = DeltosGetField(ff, 'id')
+    return title . '	' . date . '	' . id
 endfunction
 
 function! DeltosGetField(fname, field)
@@ -184,53 +195,6 @@ function! DeltosGetField(fname, field)
     let line = system("grep -m1 '^" . a:field . "' " . ff)
     return join(split(line, ' ')[1:-1], ' ')[0:-2] " -2 chomps the newline
 endfunction
-
-"Deltos unite stuff
-let s:unite_source_deltos_open = {  'name': 'deltos_open' }
-
-function! s:unite_source_deltos_open.gather_candidates(args, context)
-    " Goal: get buffers, display titles
-    " This just gives us numbers
-    let buffers = filter(range(1, bufnr('$')), 'buflisted(v:val)')
-    return map(buffers, '{
-                \ "word": DeltosGetUniteLine(bufname(v:val)),
-                \ "source": "deltos_open",
-                \ "kind": "buffer",
-                \ "action__buffer_nr": v:val,
-                \ }')
-endfunction
-call unite#define_source(s:unite_source_deltos_open)
-unlet s:unite_source_deltos_open " we no longer need the function
-
-" Now for all deltos files
-let s:unite_source_deltos_all = { 'name': 'deltos_all' }
-
-function! s:unite_source_deltos_all.gather_candidates(args, context)
-    " display all files in deltos
-    " fields are id, title, tags
-    let alltsv = split(system(g:deltos_command . ' tsv'), "\n")
-    return map(alltsv, '{
-                \ "word": join(split(v:val,"\t")[0:1], " :: "),
-                \ "source": "deltos_all",
-                \ "kind": "file",
-                \ "action__path": ($DELTOS_HOME . "/by-id/" . split(v:val,"\t")[3] . "/deltos"),
-                \ }')
-endfunction
-call unite#define_source(s:unite_source_deltos_all)
-unlet s:unite_source_deltos_all " we no longer need the function
-
-let s:unite_source_deltos_link = { 'name': 'deltos_link' }
-function! s:unite_source_deltos_link.gather_candidates(args, context)
-    let alltsv = split(system(g:deltos_command . ' tsv'), "\n")
-    return map(alltsv, '{
-                \ "word": join(split(v:val,"\t")[0:1], " :: "),
-                \ "source": "deltos_link",
-                \ "kind": "word",
-                \ "action__text": ".(" . split(v:val,"\t")[0] . "//" . split(v:val,"\t")[3] . ")",
-                \ }')
-endfunction
-call unite#define_source(s:unite_source_deltos_link)
-unlet s:unite_source_deltos_link " we no longer need the function
 
 function! DeltosOpen()
   let base = expand('%')
@@ -276,6 +240,7 @@ augroup deltos
     au BufWritePost deltos silent exec '!deltos db-update ' . DeltosGetId()
 augroup END
 
-nnoremap <leader>do :<C-u>Unite -buffer-name=deltos_open -start-insert deltos_open<cr>
-nnoremap <leader>ds :<C-u>Unite -buffer-name=deltos_all -start-insert deltos_all<cr>
-nnoremap <leader>li :<C-u>Unite -buffer-name=deltos_link -start-insert deltos_link<cr>
+nnoremap <leader>ds :call fzf#run({'source': 'deltos tsv', 'sink': function('DeltosOpenFromFzf')})<cr>
+nnoremap <leader>do :call fzf#run({'source': DeltosGetBuffers(), 'sink': function('DeltosOpenFromFzf')})<cr>
+
+

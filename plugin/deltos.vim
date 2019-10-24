@@ -103,6 +103,21 @@ function! DeltosOpenThreadPrev()
     endif
 endfunction
 
+function! DeltosOpenThreadLatest()
+    let thread = DeltosGetThread()
+    if empty(thread)
+      echo "No thread!"
+      return
+    endif
+
+    let posts = split(system(g:deltos_command . ' get-thread ' . thread), '\n')
+    if v:shell_error
+      echo "Failed with error!"
+    else
+      execute ':e' fnameescape($DELTOS_HOME . '/by-id/' . posts[0])
+    endif
+endfunction
+
 function! DeltosNewLink()
     let fname = system(g:deltos_command . ' new')[:-2]
     let uuid = split(fname, '/')[-1]
@@ -248,8 +263,9 @@ augroup deltos
     au FileType deltos nnoremap <leader>nl :call DeltosNewLink()<CR>
     au FileType deltos nnoremap <leader>ni :call DeltosLineToNewEntry()<CR>
     " thread navigation
-    au FileType deltos nnoremap <leader>L :call DeltosOpenThreadNext()<CR>
-    au FileType deltos nnoremap <leader>H :call DeltosOpenThreadPrev()<CR>
+    au FileType deltos nnoremap <leader>l :call DeltosOpenThreadNext()<CR>
+    au FileType deltos nnoremap <leader>h :call DeltosOpenThreadPrev()<CR>
+    au FileType deltos nnoremap <leader>L :call DeltosOpenThreadLatest()<CR>
 
     " visual
     au FileType deltos vnoremap <leader>nl :call DeltosNewLinkFromVisualSelection()<CR>

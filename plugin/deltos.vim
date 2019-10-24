@@ -240,7 +240,7 @@ augroup deltos
     au BufWritePost deltos silent exec '!deltos db-update ' . DeltosGetId()
 augroup END
 
-nnoremap <leader>ds :call fzf#run({'source': 'deltos tsv', 'sink': function('DeltosOpenFromFzf')})<cr>
-nnoremap <leader>do :call fzf#run({'source': DeltosGetBuffers(), 'sink': function('DeltosOpenFromFzf')})<cr>
+nnoremap <leader>ds :call fzf#run(fzf#wrap({'source': 'deltos tsv', 'sink': function('DeltosOpenFromFzf')}))<cr>
+nnoremap <leader>do :call fzf#run(fzf#wrap({'source': DeltosGetBuffers(), 'sink': function('DeltosOpenFromFzf')}))<cr>
 
 

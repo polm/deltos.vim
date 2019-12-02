@@ -123,6 +123,32 @@ function! DeltosOpenFromFzf(line)
     execute ':e' fnameescape($DELTOS_HOME . '/by-id/' . deltosid)
 endfunction
 
+function! DeltosInsertLinkFromFzf(line)
+    let title = split(a:line, '\t')[0]
+    let deltosid = split(a:line, '\t')[-1]
+    let @" = '.(' . title . '//' . deltosid . ')'
+endfunction
+
+function! DeltosSetParentFromFzf(line)
+    let deltosid = split(a:line, '\t')[-1]
+
+    let oldcur = getcurpos()
+    call cursor(0, 1)
+    
+    " find and delete any existing parent
+    let tline = search('^parent:', 'c')
+    if tline > 0 
+      exec tline 'delete _'
+    endif
+
+    " now find the --- line and set the parent
+    let tline = search('^---$', 'c') - 1
+    call append(tline, 'parent: ' . deltosid)
+
+    "reset cursor
+    call setpos('.', oldcur)
+endfunction
+
 function! DeltosNewLink()
     let fname = system(g:deltos_command . ' new')[:-2]
     let uuid = split(fname, '/')[-1]
@@ -241,6 +267,8 @@ augroup deltos
 augroup END
 
 nnoremap <leader>ds :call fzf#run(fzf#wrap({'source': 'deltos tsv', 'sink': function('DeltosOpenFromFzf')}))<cr>
+nnoremap <leader>il :call fzf#run(fzf#wrap({'source': 'deltos tsv', 'sink': function('DeltosInsertLinkFromFzf')}))<cr>
+nnoremap <leader>sp :call fzf#run(fzf#wrap({'source': 'deltos tsv', 'sink': function('DeltosSetParentFromFzf')}))<cr>
 nnoremap <leader>do :call fzf#run(fzf#wrap({'source': DeltosGetBuffers(), 'sink': function('DeltosOpenFromFzf')}))<cr>
 
 

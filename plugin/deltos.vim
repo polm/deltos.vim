@@ -248,7 +248,7 @@ augroup deltos
     " visual
     au FileType deltos vnoremap <leader>nl :call DeltosNewLinkFromVisualSelection()<CR>
     " not interactive
-    au FileType deltos set conceallevel=2 concealcursor=i " Uses conceal settings
+    "au FileType deltos set conceallevel=2 concealcursor=i " Uses conceal settings
 
     " on saving
     au BufWritePost deltos silent exec '!deltos db-update ' . DeltosGetId()

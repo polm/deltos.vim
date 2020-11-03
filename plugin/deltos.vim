@@ -62,13 +62,9 @@ function! DeltosGetId()
 endfunction
 
 function! DeltosOpenThreadNext()
-    let thread = DeltosGetThread()
-    if empty(thread)
-      echo "No thread!"
-      return
-    endif
+    let id = DeltosGetId()
 
-    let posts = split(system(g:deltos_command . ' get-thread ' . thread), '\n')
+    let posts = split(system(g:deltos_command . ' get-thread ' . id), '\n')
     if v:shell_error
       echo "Failed with error!"
     else
@@ -83,13 +79,9 @@ function! DeltosOpenThreadNext()
 endfunction
 
 function! DeltosOpenThreadPrev()
-    let thread = DeltosGetThread()
-    if empty(thread)
-      echo "No thread!"
-      return
-    endif
+    let id = DeltosGetId()
 
-    let posts = split(system(g:deltos_command . ' get-thread ' . thread), '\n')
+    let posts = split(system(g:deltos_command . ' get-thread ' . id), '\n')
     if v:shell_error
       echo "Failed with error!"
     else
@@ -104,13 +96,9 @@ function! DeltosOpenThreadPrev()
 endfunction
 
 function! DeltosOpenThreadLatest()
-    let thread = DeltosGetThread()
-    if empty(thread)
-      echo "No thread!"
-      return
-    endif
+    let id = DeltosGetId()
 
-    let posts = split(system(g:deltos_command . ' get-thread ' . thread), '\n')
+    let posts = split(system(g:deltos_command . ' get-thread ' . id), '\n')
     if v:shell_error
       echo "Failed with error!"
     else

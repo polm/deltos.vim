@@ -114,7 +114,8 @@ endfunction
 function! DeltosInsertLinkFromFzf(line)
     let title = split(a:line, '\t')[0]
     let deltosid = split(a:line, '\t')[-1]
-    let @" = '.(' . title . '//' . deltosid . ')'
+    let link = '.(' . title . '//' . deltosid . ')'
+    execute "normal! a" . link . "\<ESC>"
 endfunction
 
 function! DeltosSetParentFromFzf(line)

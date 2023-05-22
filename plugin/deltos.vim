@@ -87,16 +87,21 @@ function! DeltosOpenThreadPrev()
     else
       let id = DeltosGetId()
       let nidx = index(posts, id) + 1
-      if nidx >= len(posts) 
+      if nidx >= len(posts)
         echo "Already at oldest post"
-      else 
+      else
         execute ':e' fnameescape($DELTOS_HOME . '/by-id/' . posts[nidx])
       endif
     endif
 endfunction
 
-function! DeltosOpenThreadLatest()
-    let id = DeltosGetId()
+function! DeltosOpenThreadLatest(tid)
+    if a:tid == v:false
+      let id = DeltosGetId()
+    else
+      let id = a:tid
+    endif
+
 
     let posts = split(system(g:deltos_command . ' get-thread ' . id), '\n')
     if v:shell_error
@@ -244,7 +249,8 @@ augroup deltos
     " thread navigation
     au FileType deltos nnoremap <leader>l :call DeltosOpenThreadNext()<CR>
     au FileType deltos nnoremap <leader>h :call DeltosOpenThreadPrev()<CR>
-    au FileType deltos nnoremap <leader>L :call DeltosOpenThreadLatest()<CR>
+    au FileType deltos nnoremap <leader>L :call DeltosOpenThreadLatest(v:false)<CR>
+    " backlinks
 
     " visual
     au FileType deltos vnoremap <leader>nl :call DeltosNewLinkFromVisualSelection()<CR>

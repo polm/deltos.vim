@@ -72,7 +72,7 @@ function! DeltosOpenThreadNext()
       let nidx = index(posts, id) - 1
       if nidx < 0
         echo "Already at newest post"
-      else 
+      else
         execute ':e' fnameescape($DELTOS_HOME . '/by-id/' . posts[nidx])
       endif
     endif
@@ -145,7 +145,7 @@ endfunction
 
 function! DeltosNewLink()
     let fname = system(g:deltos_command . ' new')[:-2]
-    let uuid = split(fname, '/')[-1]
+    let uuid = split(fname, '/')[-2]
     execute "normal! ciw.(NewTitleHere//" . uuid . ")" 
 endfunction
 
@@ -162,7 +162,7 @@ function! DeltosNewLinkFromVisualSelection()
     let finish = getpos('.')[2]
     let title = getline('.')[start : finish]
     let fname = system(g:deltos_command . ' new ' . title)[:-2]
-    let uuid = split(fname, '/')[-1]
+    let uuid = split(fname, '/')[-2]
     let link = ".(" . title . '//' . uuid . ")"
 
     let prefix = ''
@@ -216,6 +216,10 @@ function! DeltosGetField(fname, field)
     return join(split(line, ' ')[1:-1], ' ')[0:-2] " -2 chomps the newline
 endfunction
 
+function! DeltosEdit(id)
+  execute ':e' fnameescape($DELTOS_HOME . '/by-id/' . a:id)
+endfunction
+
 function! DeltosOpen()
   let base = expand('%')
   if !isdirectory(base)
@@ -233,12 +237,21 @@ function! DeltosOpen()
   set filetype=deltos
 endfunction
 
+function! DeltosShowBacklinks()
+  cgetexpr system('deltos links-to ' . expand('%:p:h:t'))
+  copen
+  wincmd p
+endfunction
+
+
 augroup deltos
     autocmd!
     " Handle dir
     au VimEnter $DELTOS_HOME/by-id/*/deltos sil! au! FileExplorer *
     au BufEnter,BufRead $DELTOS_HOME/by-id/* :call DeltosOpen()
     au BufEnter,BufRead $DELTOS_HOME/by-id/* cd %:p:h
+    "au BufRead $DELTOS_HOME/by-id/* :call DeltosShowBacklinks()
+    au QuickFixCmdPre * cd $DELTOS_HOME/by-id/
     " normal mode
     au FileType deltos nnoremap <buffer> <CR> :call FollowDeltosLink()<CR>
     au FileType deltos nnoremap <leader>nd :call DeltosOpenNewNote()<CR>
@@ -251,6 +264,7 @@ augroup deltos
     au FileType deltos nnoremap <leader>h :call DeltosOpenThreadPrev()<CR>
     au FileType deltos nnoremap <leader>L :call DeltosOpenThreadLatest(v:false)<CR>
     " backlinks
+    au FileType deltos silent nnoremap <leader>bl :call DeltosShowBacklinks()<CR>
 
     " visual
     au FileType deltos vnoremap <leader>nl :call DeltosNewLinkFromVisualSelection()<CR>

@@ -251,7 +251,6 @@ augroup deltos
     au BufEnter,BufRead $DELTOS_HOME/by-id/* :call DeltosOpen()
     au BufEnter,BufRead $DELTOS_HOME/by-id/* cd %:p:h
     "au BufRead $DELTOS_HOME/by-id/* :call DeltosShowBacklinks()
-    au QuickFixCmdPre * cd $DELTOS_HOME/by-id/
     " normal mode
     au FileType deltos nnoremap <buffer> <CR> :call FollowDeltosLink()<CR>
     au FileType deltos nnoremap <leader>nd :call DeltosOpenNewNote()<CR>

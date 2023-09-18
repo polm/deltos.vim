@@ -247,6 +247,21 @@ function! DeltosShowBacklinks()
   wincmd p
 endfunction
 
+function! DeltosThreadSearch()
+  let query = input("String to search: ")
+  if len(query) == 0
+    return
+  endif
+  let posts = split(system(g:deltos_command . ' get-thread ' . DeltosGetId()), '\n')
+  let targets = ''
+  " build the list in reverse order, since newer posts come first
+  for post in posts
+    let targets = targets . ' ' . fnameescape($DELTOS_HOME . '/by-id/' . post . '/deltos')
+  endfor
+  silent execute "grep! " . shellescape(query) . " " . targets
+  let title = DeltosGetField('%', 'title')
+  call setqflist([], 'a', {'title': 'grep ' . query . ' {' . title . '}' })
+endfunction
 
 augroup deltos
     autocmd!
@@ -262,6 +277,8 @@ augroup deltos
     au FileType deltos nnoremap <leader>id :call DeltosYankId()<CR>
     au FileType deltos nnoremap <leader>nl :call DeltosNewLink()<CR>
     au FileType deltos nnoremap <leader>ni :call DeltosLineToNewEntry()<CR>
+    " threadgrep
+    au FileType deltos nnoremap <leader>tg :call DeltosThreadSearch()<CR>
     " thread navigation
     au FileType deltos nnoremap <leader>l :call DeltosOpenThreadNext()<CR>
     au FileType deltos nnoremap <leader>h :call DeltosOpenThreadPrev()<CR>

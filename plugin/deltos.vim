@@ -263,6 +263,19 @@ function! DeltosThreadSearch()
   call setqflist([], 'a', {'title': 'grep ' . query . ' {' . title . '}' })
 endfunction
 
+function! DeltosQuickfixFormat(info)
+  " just show the id
+  " TODO: show date?
+	let items = getqflist({'id' : a:info.id, 'items' : 1}).items
+	let l = []
+	for idx in range(a:info.start_idx - 1, a:info.end_idx - 1)
+	    " use the simplified file name
+	  call add(l, fnamemodify(bufname(items[idx].bufnr), ':p:h:t') . '|' . items[idx].text)
+	endfor
+	return l
+endfunction
+set qftf=DeltosQuickfixFormat
+
 augroup deltos
     autocmd!
     " Handle dir

@@ -276,6 +276,11 @@ function! DeltosQuickfixFormat(info)
 endfunction
 set qftf=DeltosQuickfixFormat
 
+function! DeltosFzfNavigate()
+  let id = DeltosGetId()
+  call fzf#run(fzf#wrap({'source': 'deltos navigate ' .. id, 'options': g:deltos_search_opts, 'sink': function('DeltosOpenFromFzf')}))
+endfunction
+
 augroup deltos
     autocmd!
     " Handle dir
@@ -308,8 +313,11 @@ augroup deltos
     au BufWritePost deltos silent exec '!deltos db-update ' . DeltosGetId()
 augroup END
 
+
+
 let g:deltos_search_opts = '--preview "bat -f -m deltos:Markdown --style plain $DELTOS_HOME/by-id/{4}/deltos" --preview-window down,border-horizontal --delimiter "\t"'
 nnoremap <silent> <leader>ds :call fzf#run(fzf#wrap({'source': 'deltos tsv', 'options': g:deltos_search_opts, 'sink': function('DeltosOpenFromFzf')}))<cr>
+nnoremap <silent> <leader>nn :call DeltosFzfNavigate()<cr>
 nnoremap <silent> <leader>il :call fzf#run(fzf#wrap({'source': 'deltos tsv', 'options': g:deltos_search_opts, 'sink': function('DeltosInsertLinkFromFzf')}))<cr>
 nnoremap <silent> <leader>sp :call fzf#run(fzf#wrap({'source': 'deltos tsv', 'options': g:deltos_search_opts, 'sink': function('DeltosSetParentFromFzf')}))<cr>
 nnoremap <silent> <leader>do :call fzf#run(fzf#wrap({'source': DeltosGetBuffers(), 'sink': function('DeltosOpenFromFzf')}))<cr>

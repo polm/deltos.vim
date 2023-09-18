@@ -102,7 +102,6 @@ function! DeltosOpenThreadLatest(tid)
       let id = a:tid
     endif
 
-
     let posts = split(system(g:deltos_command . ' get-thread ' . id), '\n')
     if v:shell_error
       echo "Failed with error!"
@@ -208,12 +207,17 @@ function! DeltosGetBufferLine(bufnum)
 endfunction
 
 function! DeltosGetField(fname, field)
-    let ff  = fnameescape(expand(a:fname))
+    let ff = fnameescape(expand(a:fname))
     if isdirectory(ff)
       let ff = ff . '/deltos'
     endif
     let line = system("grep -m1 '^" . a:field . "' " . ff)
-    return join(split(line, ' ')[1:-1], ' ')[0:-2] " -2 chomps the newline
+    let res = join(split(line, ' ')[1:-1], ' ')[0:-2] " -2 chomps the newline
+    if res[0] == '"' && res[-1:] == '"'
+      " remove quotes
+      return res[1:-2]
+    endif
+    return res
 endfunction
 
 function! DeltosEdit(id)

@@ -226,19 +226,24 @@ endfunction
 
 function! DeltosOpen()
   let base = expand('%')
-  if !isdirectory(base)
-    return
+  if isdirectory(base)
+    " get the number of the buffer with the directory
+    let cb = expand('<abuf>') 
+    " open the deltos file
+    execute ':e ' (base . '/deltos')
+    " clear the directory buffer
+    execute cb . 'bwipeout!'
   end
 
-  " get the number of the buffer with the directory
-  let cb = expand('<abuf>') 
-  " open the deltos file
-  execute ':e ' (base . '/deltos')
-  " clear the directory buffer
-  execute cb . 'bwipeout!'
+  call DeltosNavigationSummary()
 
-  set statusline=%{DeltosGetField('%','title')}
+  set statusline=%{DeltosGetField('%','title')}%=%{b:navsum}
   set filetype=deltos
+endfunction
+
+function! DeltosNavigationSummary()
+  let navsum = system(g:deltos_command .. ' navigate-summary ' .. DeltosGetId())
+  let b:navsum = navsum[0:-2]
 endfunction
 
 function! DeltosShowBacklinks()
@@ -274,7 +279,7 @@ function! DeltosQuickfixFormat(info)
 	endfor
 	return l
 endfunction
-set qftf=DeltosQuickfixFormat
+"set qftf=DeltosQuickfixFormat
 
 function! DeltosFzfNavigate()
   let id = DeltosGetId()
@@ -311,11 +316,12 @@ augroup deltos
 
     " on saving
     au BufWritePost deltos silent exec '!deltos db-update ' . DeltosGetId()
+    au BufWritePost deltos silent call DeltosNavigationSummary()
 augroup END
 
 
 
-let g:deltos_search_opts = '--no-sort --preview "bat -f -m deltos:Markdown --style plain $DELTOS_HOME/by-id/{4}/deltos" --preview-window down,border-horizontal --delimiter "\t"'
+let g:deltos_search_opts = '--bind ctrl-s:toggle-sort --preview "bat -f -m deltos:Markdown --style plain $DELTOS_HOME/by-id/{4}/deltos" --preview-window down,border-horizontal --delimiter "\t"'
 nnoremap <silent> <leader>ds :call fzf#run(fzf#wrap({'source': 'deltos tsv', 'options': g:deltos_search_opts, 'sink': function('DeltosOpenFromFzf')}))<cr>
 nnoremap <silent> <leader>nn :call DeltosFzfNavigate()<cr>
 nnoremap <silent> <leader>il :call fzf#run(fzf#wrap({'source': 'deltos tsv', 'options': g:deltos_search_opts, 'sink': function('DeltosInsertLinkFromFzf')}))<cr>

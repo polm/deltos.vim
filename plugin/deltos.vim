@@ -328,4 +328,6 @@ nnoremap <silent> <leader>il :call fzf#run(fzf#wrap({'source': 'deltos tsv', 'op
 nnoremap <silent> <leader>sp :call fzf#run(fzf#wrap({'source': 'deltos tsv', 'options': g:deltos_search_opts, 'sink': function('DeltosSetParentFromFzf')}))<cr>
 nnoremap <silent> <leader>do :call fzf#run(fzf#wrap({'source': DeltosGetBuffers(), 'sink': function('DeltosOpenFromFzf')}))<cr>
 
-
+" custom text object
+vnoremap dl :<C-U>silent! normal! T(vt/<CR>
+omap dl :normal vdl<CR>

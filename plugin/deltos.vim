@@ -86,7 +86,13 @@ function! DeltosOpenThreadPrev()
     else
       let nidx = index(posts, id) + 1
       if nidx >= len(posts)
-        echo "Already at oldest post"
+        " if there is a reply-to, go there
+        let reply_to = DeltosGetField('%','reply-to')
+        if !v:shell_error
+          execute ':e' fnameescape($DELTOS_HOME . '/by-id/' . reply_to)
+        else 
+          echo "Already at oldest post"
+        endif
       else
         execute ':e' fnameescape($DELTOS_HOME . '/by-id/' . posts[nidx])
       endif

@@ -295,6 +295,32 @@ function! DeltosFzfNavigate()
   call fzf#run(fzf#wrap({'source': 'deltos navigate ' .. id, 'options': g:deltos_search_opts, 'sink': function('DeltosOpenFromFzf')}))
 endfunction
 
+function! CopyTodo()
+  " copy unfinished todos from the top of an entry to the bottom
+  let oldpos = getpos(".")
+
+  " move after the header
+  call cursor(1, 1)
+  call search('^---')
+  normal! j
+
+  let todos = ''
+  while v:true
+    let line = getline(".")
+    if len(line) > 0 && line[0] != '-'
+      " stop once we get a non-todo
+      break
+    elseif line =~ '\v- ([x)@!' || len(line) == 0
+      " copy unfinished todos and empty divider lines
+      let todos = todos . "\n" . line
+    endif
+    normal! j
+  endwhile 
+
+  cal setpos(".", oldpos)
+  execute "normal! i" . todos . "\<Esc>"
+endfunction
+
 augroup deltos
     autocmd!
     " Handle dir
@@ -316,6 +342,8 @@ augroup deltos
     au FileType deltos nnoremap <leader>h :call DeltosOpenThreadPrev()<CR>
     au FileType deltos nnoremap <leader>H :call DeltosOpenThreadFirst()<CR>
     au FileType deltos nnoremap <leader>L :call DeltosOpenThreadLatest(v:false)<CR>
+    " todos
+    au FileType deltos nnoremap <leader>ct :call CopyTodo()<CR>
     " backlinks
     au FileType deltos silent nnoremap <leader>bl :call DeltosShowBacklinks()<CR>
 

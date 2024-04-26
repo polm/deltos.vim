@@ -321,6 +321,18 @@ function! CopyTodo()
   execute "normal! i" . todos . "\<Esc>"
 endfunction
 
+function! DeltosBranch()
+  " reply to a note but then start a new thread
+  call DeltosOpenReply()
+
+  " no need to save cursor since this is a new note
+
+  " now replace the thread id with the current id
+  let tline = search('^thread:', 'c')
+  let id = DeltosGetId()
+  call setline(tline, 'thread: ' . id)
+endfunction
+
 augroup deltos
     autocmd!
     " Handle dir
@@ -332,6 +344,7 @@ augroup deltos
     au FileType deltos nnoremap <buffer> <CR> :call FollowDeltosLink()<CR>
     au FileType deltos nnoremap <leader>nd :call DeltosOpenNewNote()<CR>
     au FileType deltos nnoremap <leader>dr :call DeltosOpenReply()<CR>
+    au FileType deltos nnoremap <leader>br :call DeltosBranch()<CR>
     au FileType deltos nnoremap <leader>id :call DeltosYankId()<CR>
     au FileType deltos nnoremap <leader>nl :call DeltosNewLink()<CR>
     au FileType deltos nnoremap <leader>ni :call DeltosLineToNewEntry()<CR>

@@ -68,7 +68,6 @@ function! DeltosOpenThreadNext()
     if v:shell_error
       echo "Failed with error!"
     else
-      let id = DeltosGetId()
       let nidx = index(posts, id) - 1
       if nidx < 0
         echo "Already at newest post"
@@ -85,13 +84,23 @@ function! DeltosOpenThreadPrev()
     if v:shell_error
       echo "Failed with error!"
     else
-      let id = DeltosGetId()
       let nidx = index(posts, id) + 1
       if nidx >= len(posts)
         echo "Already at oldest post"
       else
         execute ':e' fnameescape($DELTOS_HOME . '/by-id/' . posts[nidx])
       endif
+    endif
+endfunction
+
+function! DeltosOpenThreadFirst()
+    let id = DeltosGetId()
+
+    let posts = split(system(g:deltos_command . ' get-thread ' . id), '\n')
+    if v:shell_error
+      echo "Failed with error!"
+    else
+        execute ':e' fnameescape($DELTOS_HOME . '/by-id/' . posts[-1])
     endif
 endfunction
 
@@ -305,6 +314,7 @@ augroup deltos
     " thread navigation
     au FileType deltos nnoremap <leader>l :call DeltosOpenThreadNext()<CR>
     au FileType deltos nnoremap <leader>h :call DeltosOpenThreadPrev()<CR>
+    au FileType deltos nnoremap <leader>H :call DeltosOpenThreadFirst()<CR>
     au FileType deltos nnoremap <leader>L :call DeltosOpenThreadLatest(v:false)<CR>
     " backlinks
     au FileType deltos silent nnoremap <leader>bl :call DeltosShowBacklinks()<CR>

@@ -386,5 +386,8 @@ nnoremap <silent> <leader>sp :call fzf#run(fzf#wrap({'source': 'deltos tsv', 'op
 nnoremap <silent> <leader>do :call fzf#run(fzf#wrap({'source': DeltosGetBuffers(), 'sink': function('DeltosOpenFromFzf')}))<cr>
 
 " custom text object
-vnoremap dl :<C-U>silent! normal! T(vt/<CR>
-omap dl :normal vdl<CR>
+" do not make this dl - it makes dd slow
+" ll is also not ok because it interferes with movement
+" il - "interior of link"
+vnoremap il :<C-U>silent! normal! T(vt/<CR>
+omap il :normal vil<CR>

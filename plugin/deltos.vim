@@ -137,6 +137,41 @@ function! DeltosInsertLinkFromFzf(line)
     execute "normal! a" . link . "\<ESC>"
 endfunction
 
+function! DeltosSetProjectFromFzf(line)
+    let deltosid = split(a:line, '\t')[-1]
+
+    let oldcur = getcurpos()
+    call cursor(0, 1)
+    
+    " find and delete any existing parent
+    let tline = search('^projects:', 'c')
+    " get the contents of the line
+    let projs = []
+    if tline > 0 
+      let projs = split(trim(getline(tline)[9:], " []"), "/, */")
+      exec tline 'delete _'
+    endif
+
+    " now find the --- line and set the parent
+    let tline = search('^---$', 'c') - 1
+    " TODO uniq doesn't seem to be working, why not?
+    let pline = join(uniq([deltosid] + projs), ", ")
+    call append(tline, 'projects: [' .. pline .. ']')
+
+    "reset cursor
+    call setpos('.', oldcur)
+endfunction
+
+function! DeltosGoToProject()
+  "TODO this is functional, but it only uses the first project.
+  "Ideally it should open fzf to choose if there is more than one.
+    let tline = search('^projects:', 'c')
+    let projs = split(trim(getline(tline)[9:], " []"), "/, */")
+    if len(projs) > 0
+      call DeltosEdit(projs[0])
+    endif 
+endfunction
+
 function! DeltosSetParentFromFzf(line)
     let deltosid = split(a:line, '\t')[-1]
 
@@ -361,6 +396,7 @@ augroup deltos
     au FileType deltos nnoremap <leader>h :call DeltosOpenThreadPrev()<CR>
     au FileType deltos nnoremap <leader>H :call DeltosOpenThreadFirst()<CR>
     au FileType deltos nnoremap <leader>L :call DeltosOpenThreadLatest(v:false)<CR>
+    au FileType deltos nnoremap <leader>k :call DeltosGoToProject()<CR>
     " todos
     au FileType deltos nnoremap <leader>ct :call CopyTodo()<CR>
     " backlinks
@@ -382,7 +418,8 @@ let g:deltos_search_opts = '--bind ctrl-s:toggle-sort --preview "bat -f -m delto
 nnoremap <silent> <leader>ds :call fzf#run(fzf#wrap({'source': 'deltos tsv', 'options': g:deltos_search_opts, 'sink': function('DeltosOpenFromFzf')}))<cr>
 nnoremap <silent> <leader>nn :call DeltosFzfNavigate()<cr>
 nnoremap <silent> <leader>il :call fzf#run(fzf#wrap({'source': 'deltos tsv', 'options': g:deltos_search_opts, 'sink': function('DeltosInsertLinkFromFzf')}))<cr>
-nnoremap <silent> <leader>sp :call fzf#run(fzf#wrap({'source': 'deltos tsv', 'options': g:deltos_search_opts, 'sink': function('DeltosSetParentFromFzf')}))<cr>
+nnoremap <silent> <leader>sP :call fzf#run(fzf#wrap({'source': 'deltos tsv', 'options': g:deltos_search_opts, 'sink': function('DeltosSetParentFromFzf')}))<cr>
+nnoremap <silent> <leader>sp :call fzf#run(fzf#wrap({'source': 'deltos tsv', 'options': g:deltos_search_opts, 'sink': function('DeltosSetProjectFromFzf')}))<cr>
 nnoremap <silent> <leader>do :call fzf#run(fzf#wrap({'source': DeltosGetBuffers(), 'sink': function('DeltosOpenFromFzf')}))<cr>
 
 " custom text object

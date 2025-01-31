@@ -311,7 +311,8 @@ function! DeltosThreadSearch()
   let targets = ''
   " build the list in reverse order, since newer posts come first
   for post in posts
-    let targets = targets . ' ' . fnameescape($DELTOS_HOME . '/by-id/' . post . '/deltos')
+    "let targets = targets . ' ' . fnameescape($DELTOS_HOME . '/by-id/' . post . '/deltos')
+    let targets = ' ' . fnameescape($DELTOS_HOME . '/by-id/' . post . '/deltos') . ' ' . targets
   endfor
   silent execute "grep! " . shellescape(query) . " " . targets
   let title = DeltosGetField('%', 'title')
@@ -325,11 +326,15 @@ function! DeltosQuickfixFormat(info)
 	let l = []
 	for idx in range(a:info.start_idx - 1, a:info.end_idx - 1)
 	    " use the simplified file name
-	  call add(l, fnamemodify(bufname(items[idx].bufnr), ':p:h:t') . '|' . items[idx].text)
+    let ff  = fnameescape(expand('#' . items[idx].bufnr))
+    let date = DeltosGetField(ff, 'date')[0:9]
+    let title = DeltosGetField(ff, 'title')
+
+	  call add(l, fnamemodify(bufname(items[idx].bufnr), ':p:h:t') . '|' . date . '|' . title . '|' . items[idx].text)
 	endfor
 	return l
 endfunction
-"set qftf=DeltosQuickfixFormat
+set qftf=DeltosQuickfixFormat
 
 function! DeltosFzfNavigate()
   let id = DeltosGetId()
@@ -383,6 +388,8 @@ augroup deltos
     "au BufRead $DELTOS_HOME/by-id/* :call DeltosShowBacklinks()
     " normal mode
     au FileType deltos nnoremap <buffer> <CR> :call FollowDeltosLink()<CR>
+    " keep default behavior in quickfix
+    au BufReadPost quickfix nnoremap <buffer> <CR> <CR>
     au FileType deltos nnoremap <leader>nd :call DeltosOpenNewNote()<CR>
     au FileType deltos nnoremap <leader>dr :call DeltosOpenReply()<CR>
     au FileType deltos nnoremap <leader>br :call DeltosBranch()<CR>

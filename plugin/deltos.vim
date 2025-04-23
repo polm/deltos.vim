@@ -139,7 +139,7 @@ function! DeltosInsertLinkFromFzf(line)
       let title = alias
     endif
     let link = '.(' . title . '//' . deltosid . ')'
-    execute "normal! a" . link . "\<ESC>"
+    execute "normal! i" . link . "\<ESC>"
 endfunction
 
 function! DeltosSetProjectFromFzf(line)

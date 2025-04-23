@@ -262,6 +262,7 @@ function! DeltosGetBufferLine(bufnum)
 endfunction
 
 function! DeltosGetField(fname, field)
+    " this is honestly pretty awful!
     let ff = fnameescape(expand(a:fname))
     if isdirectory(ff)
       let ff = ff . '/deltos'

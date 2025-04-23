@@ -131,8 +131,13 @@ function! DeltosOpenFromFzf(line)
 endfunction
 
 function! DeltosInsertLinkFromFzf(line)
-    let title = split(a:line, '\t')[0]
     let deltosid = split(a:line, '\t')[-1]
+    let fname = fnameescape($DELTOS_HOME . '/by-id/' . deltosid)
+    let title = split(a:line, '\t')[0]
+    let alias = DeltosGetField(fname, 'alias')
+    if len(alias) > 0
+      let title = alias
+    endif
     let link = '.(' . title . '//' . deltosid . ')'
     execute "normal! a" . link . "\<ESC>"
 endfunction

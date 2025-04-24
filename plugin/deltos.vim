@@ -130,6 +130,13 @@ function! DeltosOpenFromFzf(line)
     execute ':e' fnameescape($DELTOS_HOME . '/by-id/' . deltosid)
 endfunction
 
+function! DeltosOpenFromFts(line)
+    " TODO unify the format here with the other search - this shouldn't be
+    " completely different...
+    let parts = split(a:line, '\t')
+    execute ':e +' . parts[1] . ' ' . parts[0]
+endfunction
+
 function! DeltosInsertLinkFromFzf(line)
     let deltosid = split(a:line, '\t')[-1]
     let fname = fnameescape($DELTOS_HOME . '/by-id/' . deltosid)
@@ -427,8 +434,10 @@ augroup END
 
 
 
-let g:deltos_search_opts = '--bind ctrl-s:toggle-sort --preview "bat -f -m deltos:Markdown --style plain $DELTOS_HOME/by-id/{4}/deltos" --preview-window down,border-horizontal --delimiter "\t"'
+let g:deltos_search_opts = '--bind ctrl-s:toggle-sort --preview "bat -fp -m deltos:Markdown --style plain $DELTOS_HOME/by-id/{4}/deltos" --preview-window down,border-horizontal --delimiter "\t"'
 nnoremap <silent> <leader>ds :call fzf#run(fzf#wrap({'source': 'deltos tsv', 'options': g:deltos_search_opts, 'sink': function('DeltosOpenFromFzf')}))<cr>
+let g:deltos_fts_opts = '+s -e --with-nth 3 --preview "bat -fp -m deltos:Markdown --style plain {1} --highlight-line {2}" --preview-window +{2}-5,down,border-horizontal --delimiter "\t"'
+nnoremap <silent> <leader>fs :call fzf#run(fzf#wrap({'source': 'deltos deft', 'options': g:deltos_fts_opts, 'sink': function('DeltosOpenFromFts')}))<cr>
 nnoremap <silent> <leader>nn :call DeltosFzfNavigate()<cr>
 nnoremap <silent> <leader>il :call fzf#run(fzf#wrap({'source': 'deltos tsv', 'options': g:deltos_search_opts, 'sink': function('DeltosInsertLinkFromFzf')}))<cr>
 nnoremap <silent> <leader>sP :call fzf#run(fzf#wrap({'source': 'deltos tsv', 'options': g:deltos_search_opts, 'sink': function('DeltosSetParentFromFzf')}))<cr>
